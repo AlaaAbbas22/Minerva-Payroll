@@ -64,11 +64,7 @@ creds= {
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/alaa-590%40mipay-415819.iam.gserviceaccount.com",
   "universe_domain": "googleapis.com"
 }
-print(creds["private_key"])
-print(os.environ["private_key"])
-print(os.environ["private_key_id"])
-print(os.environ["client_email"])
-print(os.environ["client_id"])
+
 cred = Credentials.from_service_account_info(creds, scopes=scopes)
 client = gspread.authorize(cred)
 SPREADSHEET_ID = "1rhLtwfyrqGNReC-BqZoUWLUYodTcWXBii1uZCkekU5U"
@@ -84,7 +80,7 @@ def get_current_PP():
 
 @app.route("/dummy", methods=["GET"])
 def dummy():
-    return 1
+    return {"result":1}
 
 @app.route("/ytdintern", methods=["GET"])
 def ytd():
