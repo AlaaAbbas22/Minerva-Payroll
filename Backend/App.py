@@ -12,7 +12,7 @@ import datetime
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = os.environ["secret-key"]
+app.config["SECRET_KEY"] = 'os.environ["secret-key"]'
 app.config["SESSION_TYPE"] = 'filesystem'
 app.config.update(
     SESSION_COOKIE_SECURE=True,
@@ -22,7 +22,7 @@ app.permanent_session_lifetime = timedelta(days=1000)
 CORS(app, supports_credentials=True)
 Session(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["db"]
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://trial_1ubv_user:bgUlmHwqX8MTM2kJuDT6VkvqqLAQDLFg@dpg-cntau8un7f5s73f81650-a.oregon-postgres.render.com/trial_1ubv'#os.environ["db"]
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -64,7 +64,10 @@ creds= {
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/alaa-590%40mipay-415819.iam.gserviceaccount.com",
   "universe_domain": "googleapis.com"
 }
-
+print(os.environ["private_key"])
+print(os.environ["private_key_id"])
+print(os.environ["client_email"])
+print(os.environ["client_id"])
 cred = Credentials.from_service_account_info(creds, scopes=scopes)
 client = gspread.authorize(cred)
 SPREADSHEET_ID = "1rhLtwfyrqGNReC-BqZoUWLUYodTcWXBii1uZCkekU5U"
