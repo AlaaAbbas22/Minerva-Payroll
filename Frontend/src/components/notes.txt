@@ -1,0 +1,11 @@
+
+handle CIs with different %
+handle the modes
+sample and population SDs
+the history
+remove zero to null
+Handle writing chars
+responsiveness
+unequal filter
+clean code
+Change the symbols
