@@ -12,7 +12,7 @@ import datetime
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = 'os.environ["secret-key"]'
+app.config["SECRET_KEY"] = os.environ["secret-key"]
 app.config["SESSION_TYPE"] = 'filesystem'
 app.config.update(
     SESSION_COOKIE_SECURE=True,
@@ -22,7 +22,7 @@ app.permanent_session_lifetime = timedelta(days=1000)
 CORS(app, supports_credentials=True)
 Session(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://trial_1ubv_user:bgUlmHwqX8MTM2kJuDT6VkvqqLAQDLFg@dpg-cntau8un7f5s73f81650-a.oregon-postgres.render.com/trial_1ubv'#os.environ["db"]
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["db"]
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -104,9 +104,9 @@ def gettimecard():
         print(email)
         PP_sheet = spreadsheet.worksheet(request.json["PP"])
         cell = PP_sheet.find(email, in_column=2)
-        row = PP_sheet.row_values(cell.row)[2:4]
+        row = PP_sheet.row_values(cell.row)
         print(row)
-        return {"result": row,"start":str(start_date.strftime('%m/%d/%Y')), "end":str(end_date.strftime('%m/%d/%Y'))}
+        return {"result": row[2:4],"manager_approval": row[8],"tasks": row[6],"start":str(start_date.strftime('%m/%d/%Y')), "end":str(end_date.strftime('%m/%d/%Y'))}
     except:
         print("Error in getting sheet")
         return {"result": [0,0]}
@@ -136,6 +136,8 @@ def updatetimecard():
             
             PP_sheet.update_cell(cell.row, 3, PP_weeks[0])
             PP_sheet.update_cell(cell.row, 4, PP_weeks[1])
+            PP_sheet.update_cell(cell.row, 7, request.json["tasks"])
+            print(request.json["tasks"])
             return {"result": "Done!"}
         else:
             return {"result": "Unauthorized!"}

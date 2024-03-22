@@ -9,12 +9,16 @@ const Timecard = ({ baseURL }: {baseURL: String}) => {
   const [PP, setPP] = useState("")
   const [Week1, setWeek1] = useState(0)
   const [Week2, setWeek2] = useState(0)
+  const [tasks, settasks] = useState("")
+  
   const [button, setbutton] = useState("Update")
   const [buttoncolor, setbuttoncolor] = useState("slate-50")
+  const [bginputcolor, setbginputcolor] = useState("")
   const [current_pp, setcurrent_pp] = useState("")
   const [loading, setloading] = useState("Loading")
   const [start, setstart] = useState("")
   const [end, setend] = useState("")
+  const [manager_approval, setmanager_approval] = useState("")
 
 
 
@@ -28,6 +32,17 @@ async function A(PP: string) {
     setWeek2(response.data.result[1]);
     setstart(response.data.start);
     setend(response.data.end);
+    settasks(response.data.tasks);
+    if (response.data.manager_approval.toUpperCase() == "YES" || response.data.manager_approval.toUpperCase() == "NO"){
+    setmanager_approval(response.data.manager_approval);}
+    else {
+      setmanager_approval("Unchecked yet");
+    }
+    if (Number(PP.slice(2))!=Number(current_pp)){
+      setbginputcolor("yellow-600")
+    } else {
+      setbginputcolor("")
+    }
     setloading("Done");
   })
   .catch(function (error) {
@@ -41,6 +56,7 @@ async function update_PP() {
   await Http.post(`${baseURL}/updatetimecard`, {
     Weeks: [Week1, Week2],
     PP: PP,
+    tasks:tasks,
   })
   .then(function (response) {
     if (response.data.result == "Done!"){
@@ -113,7 +129,7 @@ loading=="Done"&&<>
         </select>
 
   </form>
-  <table className='mx-auto nice-table text-black '>
+  <table className='mx-auto nice-table text-black'>
       <thead>
 
       </thead>
@@ -121,43 +137,68 @@ loading=="Done"&&<>
         
       
           <tr>
-            <td colSpan={2} className='md:p-5 p-2 text-sm md:text-2xl text-blue-900'>
+            <td colSpan={2} className={`md:p-5 p-2 text-sm md:text-2xl text-blue-900 `}>
                 Start of Pay Period
             </td>
             </tr>
             <tr >
-            <td colSpan={2} className='md:p-5 p-2 text-sm md:text-xl font-mono'>
+            <td colSpan={2} className={`md:p-5 p-2 text-sm md:text-xl font-mono `}>
                 {start}
             </td>
             </tr>
             <tr>
-            <td colSpan={2} className='md:p-5 p-2 text-sm md:text-2xl text-blue-900'>
-                End of Pay Period
+            <td colSpan={2} className={`md:p-5 p-2 text-sm md:text-2xl text-blue-900 `}>
+                End of Pay Period <span className='text-red-500'>(Deadline to submit hours)</span>
             </td>
             </tr>
             <tr>
-            <td colSpan={2} className='md:p-5 p-2 text-sm md:text-xl  font-mono'>
+            <td colSpan={2} className={`md:p-5 p-2 text-sm md:text-xl font-mono `}>
                 {end}
             </td>
             </tr>
             <tr>
-            <td className='md:p-5 p-2 text-sm md:text-2xl text-blue-900'>
+            <td className={`md:p-5 p-2 text-sm md:text-2xl text-blue-900`}>
                 Week 1
             </td>
             <td >
-                <input disabled={Number(PP.slice(2))==Number(current_pp) ? false : true} type='number' name= "numbers" id = "large-input" value = {Week1} placeholder='Type numbers separated by commas' className='mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500  font-mono' onChange={handleChangeweek1}>
+                <input disabled={Number(PP.slice(2))==Number(current_pp) ? false : true} type='number' name= "numbers" id = "large-input" value = {Week1} placeholder='Type a number' className={`mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500  font-mono bg-${bginputcolor}`} onChange={handleChangeweek1}>
                 </input>
             </td>
           </tr>
           <tr>
-            <td className='md:p-5 p-2 text-sm md:text-2xl text-blue-900'>
+            <td className={`md:p-5 p-2 text-sm md:text-2xl text-blue-900`}>
                 Week 2
             </td>
             <td >
-                <input disabled={Number(PP.slice(2))==Number(current_pp) ? false : true} type='number' name= "numbers" id = "large-input" value = {Week2} placeholder='Type numbers separated by commas' className='mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 font-mono' onChange={handleChangeweek2}>
+                <input disabled={Number(PP.slice(2))==Number(current_pp) ? false : true} type='numbers' name= "numbers" id = "large-input" value = {Week2} placeholder='Type a number' className={`mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 font-mono bg-${bginputcolor}`} onChange={handleChangeweek2}>
                 </input>
             </td>
           </tr>
+          <tr>
+            <td colSpan={2} className={`md:p-5 p-2 text-sm md:text-2xl text-blue-900`}>
+                Comments/Tasks Completed
+            </td>
+            </tr>
+            <tr>
+            <td colSpan={2} className={`md:p-5 p-2 text-sm md:text-2xl`}>
+                <textarea disabled={Number(PP.slice(2))==Number(current_pp) ? false : true} name= "tasks" id = "large-input" value = {tasks} placeholder='List tasks completed during this pay period' className={`mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 font-mono bg-${bginputcolor}`} onChange={(e)=> settasks(e.target.value)}>
+                </textarea>
+            </td>
+            </tr>
+
+            <tr>
+            <td colSpan={2} className={`md:p-5 p-2 text-sm md:text-2xl text-blue-900`}>
+                Manager Approval
+            </td>
+            </tr>
+            <tr>
+            <td colSpan={2} className={`md:p-5 p-2 text-sm md:text-2xl`}>
+                <input disabled name= "tasks" id = "large-input" value = {manager_approval} placeholder='List tasks completed during this pay period' className={`mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 font-mono bg-${bginputcolor}`}>
+                </input>
+            </td>
+            </tr>
+            
+            
         
       </tbody>
     </table>
