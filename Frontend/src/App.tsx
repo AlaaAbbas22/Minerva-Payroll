@@ -12,14 +12,13 @@ import YTD from './components/YTD'
 import Nav2 from './components/Nav2'
 import Nav3 from './components/Nav3'
 import Timecard from "./components/Timecard";
-import History from "./components/History";
 import logo from "../public/El statistician (2).png"
 import img from "../public/5837088.png"
 import Login from "./components/Login";
 import Profile from "./components/Profile";
 import Http from "./components/Http";
 import Tooltip from '@mui/material/Tooltip';
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import YTDManagers from "./components/YTDManagers";
 import TimecardManagers from "./components/TimecardsManagers";
 import ManagerProfile from "./components/ManagerProfile";
