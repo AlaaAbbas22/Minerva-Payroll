@@ -7,9 +7,9 @@ from uuid import uuid4
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 import datetime
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
-load_dotenv()
+#load_dotenv()
 
 
 
