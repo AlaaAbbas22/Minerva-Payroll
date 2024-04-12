@@ -5,7 +5,7 @@ const Login = ({ baseURL }: {baseURL: String}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setloading] = useState('Done');
-
+  const [button, setbutton] = useState("Login")
 
   const handleSubmit = async (event: React.FormEvent) => {
     setloading("Loading")
@@ -16,17 +16,24 @@ const Login = ({ baseURL }: {baseURL: String}) => {
       email: username,
       password:password,
     }).then((response)=>{
-      
+      console.log(response.data)
+      if (response.data.result != "Not found")
+      {localStorage.setItem('manager', response.data["manager"]);
       localStorage.setItem('email_intern', response.data["Student Email"]);
       localStorage.setItem('intern_name', response.data["Student Name"]);
       localStorage.setItem('intern_manager', response.data["Manager Name"]);
       localStorage.setItem('intern_manager_email', response.data["Work Email"]);
       localStorage.setItem('intern_department', response.data["Department "]);
       localStorage.setItem('intern_id', response.data["StudentId"]);
-      window.location.replace("/intern/");
+      window.location.replace("/");
+    }
+      else{
+        setbutton("Error! Try again.");
+        setloading("Done");
+      }
     }).catch((e)=>{
       console.log(e);
-      setloading("Error! Try again.")
+      setbutton("Error! Try again.")
       setloading("Done")
     });
       
@@ -35,7 +42,7 @@ const Login = ({ baseURL }: {baseURL: String}) => {
   return (
     loading=="Done"&&<div className="login-container">
       <form className="login-form bg-black" onSubmit={handleSubmit}>
-        <h2 className='text-3xl mb-5'>Intern Login</h2>
+        <h2 className='text-3xl mb-5'>Login</h2>
         <div className="form-group">
           <label htmlFor="email">Username (email)</label>
           <input
@@ -58,7 +65,7 @@ const Login = ({ baseURL }: {baseURL: String}) => {
             required
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit">{button}</button>
       </form>
     </div>||<div className="m-auto my-20 w-40"><TailSpin
             height="140"

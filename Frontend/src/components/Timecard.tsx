@@ -13,7 +13,7 @@ const Timecard = ({ baseURL }: {baseURL: String}) => {
   
   const [button, setbutton] = useState("Update")
   const [buttoncolor, setbuttoncolor] = useState("slate-50")
-  const [bginputcolor, setbginputcolor] = useState("")
+  const [bginputcolor, setbginputcolor] = useState("slate-50")
   const [current_pp, setcurrent_pp] = useState("")
   const [loading, setloading] = useState("Loading")
   const [start, setstart] = useState("")
@@ -38,7 +38,7 @@ async function A(PP: string) {
     else {
       setmanager_approval("Unchecked yet");
     }
-    if (Number(PP.slice(2))!=Number(current_pp)){
+    if (Number(PP.slice(2))!=Number(current_pp)&&current_pp){
       setbginputcolor("yellow-600")
     } else {
       setbginputcolor("")
@@ -114,7 +114,7 @@ var timecards_orig = ["PP1","PP2","PP3","PP4","PP5","PP6","PP7","PP8","PP9","PP1
 const timecards = timecards_orig.filter((pp)=>Number(pp.slice(2))<=Number(current_pp))
 console.log(timecards)
 if (localStorage.getItem("logged_intern")=="false"){
-  return <Navigate replace to="/intern/login" />;
+  return <Navigate replace to="/login" />;
 }
 else{
 return (
@@ -193,7 +193,7 @@ loading=="Done"&&<>
             </tr>
             <tr>
             <td colSpan={2} className={`md:p-5 p-2 text-sm md:text-2xl`}>
-                <input disabled name= "tasks" id = "large-input" value = {manager_approval} placeholder='List tasks completed during this pay period' className={`mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 font-mono bg-${bginputcolor}`}>
+                <input disabled name= "tasks" id = "large-input" value = {manager_approval} className={`mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 font-mono bg-${bginputcolor}`}>
                 </input>
             </td>
             </tr>

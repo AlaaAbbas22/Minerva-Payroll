@@ -6,10 +6,10 @@ import { Navigate } from 'react-router-dom';
 const Profile = () => {
 
 
-
+console.log(localStorage)
 
 if (localStorage.getItem("logged_intern")=="false"){
-  return <Navigate replace to="/intern/login"/>;
+  return <Navigate replace to="/login"/>;
 }
 else{
 
