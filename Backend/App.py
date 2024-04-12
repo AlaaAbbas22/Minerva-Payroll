@@ -7,8 +7,8 @@ from uuid import uuid4
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 import datetime
-#from dotenv import load_dotenv
 
+#from dotenv import load_dotenv
 #load_dotenv()
 
 
@@ -261,7 +261,7 @@ def manager_profile(email):
 
 @app.route('/login', methods = ["POST"])
 def login():
-    user = Users.query.filter_by(email=request.json["email"], password= request.json["password"]).first()
+    user = Users.query.filter_by(email=request.json["email"].strip(), password= request.json["password"]).first()
     if user:
         
         print(user.manager)
@@ -270,7 +270,7 @@ def login():
             user.session_ids.append(Session_Id(session_id = uid, email_session= user,manager =user.manager))
             db.session.commit()
             session["uid"] = str(uid)
-            data = intern_profile(request.json["email"])
+            data = intern_profile(request.json["email"].strip())
             data["manager"] = "intern"
             data["result"] = "Working"
             print(data)
