@@ -170,7 +170,7 @@ loading=="Done"&&<>
                 Week 2
             </td>
             <td >
-                <input disabled={Number(PP.slice(2))==Number(current_pp) ? false : true} type='numbers' name= "numbers" id = "large-input" value = {Week2} placeholder='Type a number' className={`mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 font-mono bg-${bginputcolor}`} onChange={handleChangeweek2}>
+                <input disabled={Number(PP.slice(2))==Number(current_pp) ? false : true} type='number' name= "numbers" id = "large-input" value = {Week2} placeholder='Type a number' className={`mycenter block w-full md:p-5 p-2 text-sm md:text-xl text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 font-mono bg-${bginputcolor}`} onChange={handleChangeweek2}>
                 </input>
             </td>
           </tr>
