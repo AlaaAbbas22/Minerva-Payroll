@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-const SearchableDropdown = ({
-  options,
-  label,
-  id,
-  selectedVal,
-  handleChange,
-  handleClick
-}) => {
+
+const SearchableDropdown = ({ options, label, id, selectedVal, handleChange, handleClick }: {options: Array<{ id: number, name: string, key:string }>, label:string, id:string, selectedVal:string, handleChange:Function, handleClick: Function}) => {
+  console.log(id)
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -18,13 +13,13 @@ const SearchableDropdown = ({
     return () => document.removeEventListener("click", toggle);
   }, []);
 
-  const selectOption = (option) => {
+  const selectOption = (option: any) => {
     setQuery(() => "");
     handleChange(option[label]);
     setIsOpen((isOpen) => !isOpen);
   };
 
-  function toggle(e) {
+  function toggle(e: any) {
     setIsOpen(e && e.target === inputRef.current);
   }
 
@@ -35,7 +30,7 @@ const SearchableDropdown = ({
     return "";
   };
 
-  const filter = (options) => {
+  const filter = (options: any[]) => {
     return options.filter(
       (option) => option[label].toLowerCase().indexOf(query.toLowerCase()) > -1
     );
@@ -61,7 +56,7 @@ const SearchableDropdown = ({
       </div>
 
       <div className={`options ${isOpen ? "open" : ""}`}>
-        {filter(options).map((option, index) => {
+        {filter(options).map((option) => {
           return (
             <div
               onClick={() => {selectOption(option);handleClick(option["key"])}}
