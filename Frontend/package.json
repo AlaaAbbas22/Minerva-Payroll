@@ -19,6 +19,7 @@
     "react-dom": "^18.2.0",
     "react-loader-spinner": "^6.1.6",
     "react-router-dom": "^6.11.1",
+    "semantic-ui-react": "^2.1.5",
     "tailwind": "^4.0.0"
   },
   "devDependencies": {

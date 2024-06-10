@@ -10,7 +10,6 @@ const Login = ({ baseURL }: {baseURL: String}) => {
   const handleSubmit = async (event: React.FormEvent) => {
     setloading("Loading")
     event.preventDefault();
-    localStorage.setItem('logged_intern', "true");
     
     await Http.post(`${baseURL}/login`, {
       email: username,
@@ -25,6 +24,8 @@ const Login = ({ baseURL }: {baseURL: String}) => {
       localStorage.setItem('intern_manager_email', response.data["Work Email"]);
       localStorage.setItem('intern_department', response.data["Department "]);
       localStorage.setItem('intern_id', response.data["StudentId"]);
+      localStorage.setItem('logged_intern', "true");
+
       window.location.replace("/");
     }
       else{

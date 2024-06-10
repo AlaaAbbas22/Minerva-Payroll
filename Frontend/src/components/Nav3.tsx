@@ -41,7 +41,9 @@ useEffect(()=>{
         <li onClick={()=>{if(width <= 768){setmob(!mob)}}}>
           <Link to="/manager/profile" className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 ">Manager Profile</Link>
         </li>
-        
+        <li onClick={()=>{if(width <= 768){setmob(!mob)}}}>
+          <Link to="/manager/change_password" className="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 ">My Password</Link>
+        </li>
       </ul>
     </div>}
     </div>

@@ -41,11 +41,26 @@ class Users(db.Model):
     password = db.Column(db.String(255), nullable=False)
     session_ids = relationship('Session_Id', backref='Users', lazy=True)
     manager = db.Column(db.String(255), nullable=False)
+    firsttime = db.Column(db.Boolean(), nullable=False)
+
+
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    session_ids = relationship('Session_IdAdmin', backref='Admin', lazy=True)
 
 class Session_Id(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     session_id = db.Column(db.String(50))
     email_session = db.Column(db.String(120), db.ForeignKey('users.email'), nullable=False)
+    manager = db.Column(db.String(255), nullable=False)
+
+class Session_IdAdmin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(50))
+    email_session = db.Column(db.String(120), db.ForeignKey('admin.email'), nullable=False)
     manager = db.Column(db.String(255), nullable=False)
 
 
@@ -88,6 +103,40 @@ def get_current_PP():
 @app.route("/dummy", methods=["GET"])
 def dummy():
     return {"result":1}
+
+@app.route("/auth", methods=["GET"])
+def auth():
+    session_id1 = Session_Id.query.filter_by(session_id=str(session["uid"])).first()
+    if session_id1:
+        return {"result":"intern_manager", "email":session_id1.email_session}
+    
+    session_id1 = Session_IdAdmin.query.filter_by(session_id=str(session["uid"])).first()
+    if session_id1:
+        return {"result":"admin" , "email":session_id1.email_session}
+    return {"result":"None"}
+
+@app.route("/change_pass", methods=["POST"])
+def change_my_pass():
+    data = request.json
+    if data["type"]=="admin":
+        session_id1 = Session_IdAdmin.query.filter_by(session_id=str(session["uid"])).first()
+        user = Admin.query.filter_by(email=session_id1.email_session).first()
+        if not user:
+            return {"result": "User not found"}
+        
+        user.password = request.json["password"].strip()
+        db.session.commit()
+        return {"result" : "success"}
+        
+    if data["type"]=="user":
+        session_id1 = Session_Id.query.filter_by(session_id=str(session["uid"])).first()
+        user = Users.query.filter_by(email=session_id1.email_session).first()
+        if not user:
+            return {"result": "User not found"}
+        
+        user.password = request.json["password"].strip()
+        db.session.commit()
+        return {"result" : "success"}
 
 @app.route("/ytdintern", methods=["GET"])
 def ytd():
@@ -173,10 +222,13 @@ def gettimecardselected():
         return {"status":"Unauthorized"}
 
 def current_PPgetter():
-    spreadsheet = spreadsheetgetter()
-    config_sheet = spreadsheet.worksheet("Config")
-    current_PP = config_sheet.cell(4, 2).value 
-    return int(current_PP)
+    try:
+        spreadsheet = spreadsheetgetter()
+        config_sheet = spreadsheet.worksheet("Config")
+        current_PP = config_sheet.cell(4, 2).value 
+        return int(current_PP)
+    except:
+        return 19
 
 @app.route("/updatetimecard", methods=["POST"])
 def updatetimecard():
@@ -248,7 +300,9 @@ def intern_profile(email):
 
 def manager_profile(email):
     spreadsheet = spreadsheetgetter()
+    print("PP"+str(current_PPgetter()))
     most_recent_sheet= spreadsheet.worksheet("PP"+str(current_PPgetter()))
+    
     cell = most_recent_sheet.find(email,in_column=11)
     row_data = most_recent_sheet.row_values(cell.row)
     row_title= most_recent_sheet.row_values(3)
@@ -258,6 +312,21 @@ def manager_profile(email):
         personal_information[row_title[i]] = row_data[i]
     print(personal_information)
     return personal_information
+
+@app.route('/admin/login', methods = ["POST"])
+def loginadmin():
+    admin = Admin.query.filter_by(email=request.json["email"].strip(), password= request.json["password"]).first()
+    if admin:
+        uid = uuid4()
+        admin.session_ids.append(Session_IdAdmin(session_id = uid, email_session= admin, manager ="admin"))
+        db.session.commit()
+        session["uid"] = str(uid)
+        data= {"admin_email":admin.email, "admin_id":admin.id, "admin_name":admin.name}
+        return data
+    else:
+        return {"result": "Not found"}
+
+
 
 @app.route('/login', methods = ["POST"])
 def login():
@@ -298,6 +367,103 @@ def logout():
         ...
     return {"res":200}
 
+@app.route('/admin/logout', methods = ["POST"])
+def logoutadmin():
+    try:  
+        current_id = Session_IdAdmin.query.filter_by(session_id=str(session["uid"])).first()
+        db.session.delete(current_id)
+        db.session.commit()
+        del session["uid"]
+    except:
+        ...
+    return {"res":200}
+
+
+@app.route("/admin/ytd", methods=["GET"])
+def managerstaff():
+    session_id1 = Session_IdAdmin.query.filter_by(session_id=str(session["uid"]), manager="admin").first()
+    print(session_id1)
+    if not session_id1:
+        return {"result":"Unauthorized"}
+    spreadsheet = spreadsheetgetter()
+    ytd_sheet = spreadsheet.worksheet("YTD Analysis")
+    cells = len(ytd_sheet.get_all_values())
+    interns = []
+    for cell in range(2,cells+1):
+
+        interns.append(ytd_sheet.row_values(cell)[0:23])
+    return {"result": interns}
+
+@app.route("/admin/add_intern", methods=["PUT"])
+def adding_intern():
+    session_id1 = Session_IdAdmin.query.filter_by(session_id=str(session["uid"]), manager="admin").first()
+    if not session_id1:
+        return {"result":"Unauthorized"}
+    
+    data  = request.json
+    user = Users.query.filter_by(email=data["studentEmail"].strip()).first()
+    if not user:
+        new = Users(email= data["studentEmail"].strip(), password =data["password"].strip(), manager="intern")
+        db.session.add(new)
+        db.session.commit()
+        
+    spreadsheet = spreadsheetgetter()
+    PPsheet = spreadsheet.worksheet("PP"+str(current_PPgetter()))
+    
+    cell = PPsheet.find(data["studentEmail"].strip(), in_column=2)
+    if cell:
+        return {"result":"Already Exists"}
+    all_values = PPsheet.get_all_values()
+    row = len(all_values)+1
+    
+    new_student = [data["studentName"].strip(), 
+                   data["studentEmail"].strip(), 
+                   0, 
+                   0, 
+                   0, 
+                   f'=if(or($C{row} <> "", $D{row} <> ""), sum($C{row}:$E{row}), "")', 
+                   "", 
+                   data["managerName"].strip(), 
+                   "", 
+                   "", 
+                   data["managerEmail"].strip(), 
+                   f'=F{row}', 
+                   f"=iferror(if($B{row} <> "+'""'+f", vlookup($B{row}, 'YTD Analysis'!$C:$X,21,False), "+'""'+"), 0)",
+                   f"=iferror(if($B{row} <> "+'""'+f", vlookup($B{row}, 'YTD Analysis'!$C:$X,22,False), "+'""'+"), 0)",
+                   data["department"],
+                   data["project"],
+                   "",
+                   "",
+                   "",
+                   data["studentId"],
+                   "",
+                   "",
+                   ]
+    PPsheet.append_row(new_student, value_input_option="USER_ENTERED")
+
+    return {"": ""}
+
+@app.route("/admin/get_users", methods=["GET"])
+def get_users():
+    session_id1 = Session_IdAdmin.query.filter_by(session_id=str(session["uid"]), manager="admin").first()
+    if not session_id1:
+        return {"result":"Unauthorized"}
+    users = Users.query.all()
+    res = [user.email for user in users]
+    return {"result":res}
+
+@app.route("/admin/change_creds", methods=["POST"])
+def change_creds():
+    session_id1 = Session_IdAdmin.query.filter_by(session_id=str(session["uid"]), manager="admin").first()
+    if not session_id1:
+        return {"result":"Unauthorized"}
+    user = Users.query.filter_by(email=request.json["email"].strip()).first()
+    if not user:
+        return {"result": "User not found"}
+    
+    user.password = request.json["password"].strip()
+    db.session.commit()
+    return {"result":"Success"}
 
 
 
