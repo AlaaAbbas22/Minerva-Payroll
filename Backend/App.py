@@ -106,11 +106,12 @@ def dummy():
 
 @app.route("/auth", methods=["GET"])
 def auth():
-    session_id1 = Session_Id.query.filter_by(session_id=str(session["uid"])).first()
+    id = str(session.get("uid"))
+    session_id1 = Session_Id.query.filter_by(session_id=id).first()
     if session_id1:
         return {"result":"intern_manager", "email":session_id1.email_session}
     
-    session_id1 = Session_IdAdmin.query.filter_by(session_id=str(session["uid"])).first()
+    session_id1 = Session_IdAdmin.query.filter_by(session_id=id).first()
     if session_id1:
         return {"result":"admin" , "email":session_id1.email_session}
     return {"result":"None"}

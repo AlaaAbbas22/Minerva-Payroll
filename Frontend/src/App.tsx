@@ -12,7 +12,6 @@ import YTD from './components/YTD'
 import Nav2 from './components/Nav2'
 import Nav3 from './components/Nav3'
 import Timecard from "./components/Timecard";
-import logo from "../public/El statistician (2).png"
 import img from "../public/5837088.png"
 import Login from "./components/Login";
 import Profile from "./components/Profile";
@@ -60,8 +59,8 @@ const router = createBrowserRouter([
     element: <>
     <div className="bg-white py-2 px-0 md:px-20 ring">
       <div  className=" relative bottom-4 md:bottom-0">    
-        <div className="flex items-center  relative md:top-3 top-[110px] w-[20%]">
-          <Link to="/"><img src={logo} className="h-8" alt="Logo" /></Link>
+        <div className="flex items-center  relative md:top-3 top-[110px] w-[20%] z-40">
+          <Link to="/"><img src={img} className="h-8" alt="Logo" /></Link>
         </div>
         <div className="relative bottom-2 md:bottom-4"> 
         {localStorage.getItem("admin") == "true"&&<Link className="p-2 text-black" to="/admin">Admin Dashboard</Link>}
@@ -70,7 +69,7 @@ const router = createBrowserRouter([
           <Link to="/login" className="p-1 bg-white text-blue-950 rounded-lg ring-2 shadow-lg ring-black hover:bg-green-700 hover:text-white">Log in</Link>}
           {localStorage.getItem("manager") == "manager"&&<Link className="px-2 text-black" to="/manager">Manager Dashboard</Link>}
         </div>
-      </div>{localStorage.getItem('logged_intern')=="true"&&<div className="md:absolute top-7 right-6 text-black sm:mx-auto">Hey, {localStorage.getItem("manager")=="manager"&&localStorage.getItem('intern_manager') ||localStorage.getItem('intern_name')}</div>}
+      </div>{localStorage.getItem('logged_intern')=="true"||localStorage.getItem("admin")=="true"&&<div className="md:absolute top-7 right-6 text-black sm:mx-auto">Hey, {(localStorage.getItem("manager")=="manager")&&localStorage.getItem('intern_manager')} {localStorage.getItem("manager")=="intern"&&localStorage.getItem('intern_name')}{localStorage.getItem("admin")=="true"&&localStorage.getItem('admin_name')}</div>}
       </div>
       <Outlet/>
       <div className=" fixed bottom-0 right-0 text-black">

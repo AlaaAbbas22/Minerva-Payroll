@@ -25,6 +25,7 @@ const Login = ({ baseURL }: {baseURL: String}) => {
       localStorage.setItem('intern_department', response.data["Department "]);
       localStorage.setItem('intern_id', response.data["StudentId"]);
       localStorage.setItem('logged_intern', "true");
+      localStorage.setItem('admin', "false");
 
       window.location.replace("/");
     }

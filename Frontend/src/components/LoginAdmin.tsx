@@ -23,6 +23,7 @@ const LoginAdmin = ({ baseURL }: {baseURL: String}) => {
       localStorage.setItem('admin_email', response.data["admin_email"]);
       localStorage.setItem('admin_id', response.data["admin_id"]);
       localStorage.setItem('admin', "true");
+      localStorage.setItem('manager', "");
       window.location.replace("/admin");
     }
       else{
