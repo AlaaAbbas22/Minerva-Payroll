@@ -115,7 +115,14 @@ const router = createBrowserRouter([
           {
             path:"/intern/change_password",
             element: <MyPassword baseURL={baseURL} type={"user"}/>
+          },
+          {
+            path:"/intern/bank",
+            element: <div className="p-5 mx-auto">
+                      <iframe className="mx-auto h-[78vh] w-[100%] max-w-[640px]" src="https://docs.google.com/forms/d/e/1FAIpQLSflFC6OUHX9xq540mZsCckcvRcSr29muIIkVWpqoi9D3VTGRA/viewform?embedded=true"  >Loading…</iframe>
+                    </div>
           }
+
         ]
       },      
       {
@@ -159,6 +166,10 @@ const router = createBrowserRouter([
           {
             path:"/admin/login",
             element: <LoginAdmin baseURL={baseURL}/>
+          },
+          {
+            path:"/admin/timecard",
+            element: <TimecardManagers baseURL={baseURL}/>
           },
           {
             path:"/admin/ytd",

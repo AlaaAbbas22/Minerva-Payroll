@@ -7,7 +7,7 @@ from uuid import uuid4
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 import datetime
-
+from utils import hash_password, check_password
 #from dotenv import load_dotenv
 #load_dotenv()
 
@@ -125,7 +125,7 @@ def change_my_pass():
         if not user:
             return {"result": "User not found"}
         
-        user.password = request.json["password"].strip()
+        user.password = hash_password(request.json["password"].strip())
         db.session.commit()
         return {"result" : "success"}
         
@@ -135,7 +135,7 @@ def change_my_pass():
         if not user:
             return {"result": "User not found"}
         
-        user.password = request.json["password"].strip()
+        user.password = hash_password(request.json["password"].strip())
         db.session.commit()
         return {"result" : "success"}
 
@@ -184,26 +184,46 @@ def gettimecard():
 @app.route("/gettimecardmanagers", methods=["POST"])
 def gettimecardmanagers():
     spreadsheet = spreadsheetgetter()
-
+    
     try:
-        session_id1 = Session_Id.query.filter_by(session_id=str(session["uid"]), manager="manager").first()
+
+        session_id1 = Session_IdAdmin.query.filter_by(session_id=str(session["uid"]), manager="admin").first()
         
-        email = session_id1.email_session
-        print(request.json["PP"])
-        PP_sheet = spreadsheet.worksheet(request.json["PP"])
-        
-        cells = PP_sheet.findall(email, in_column=11)
-        names = []
-        emails = []
-        for cell in cells:
-            row = PP_sheet.row_values(cell.row)
-            names.append(row[0])
-            emails.append(row[1])
-            #interns.append({row[0]:{"result": row[2:4],"manager_approval": row[8],"tasks": row[6],"start":str(start_date.strftime('%m/%d/%Y')), "end":str(end_date.strftime('%m/%d/%Y'))}})
+        if session_id1:
+            
+            
+            PP_sheet = spreadsheet.worksheet(request.json["PP"])
+            
+            cells = PP_sheet.get_all_values()
+
+            names = []
+            emails = []
+            for cell in cells[3:]:
+                row = cell
+                names.append(row[0])
+                emails.append(row[1])
+            print(names, emails)
+        else:
+            
+            session_id1 = Session_Id.query.filter_by(session_id=str(session["uid"]), manager="manager").first()
+            
+            email = session_id1.email_session
+            
+            PP_sheet = spreadsheet.worksheet(request.json["PP"])
+            
+            cells = PP_sheet.findall(email, in_column=11)
+            names = []
+            emails = []
+            for cell in cells:
+                row = PP_sheet.row_values(cell.row)
+                names.append(row[0])
+                emails.append(row[1])
+                #interns.append({row[0]:{"result": row[2:4],"manager_approval": row[8],"tasks": row[6],"start":str(start_date.strftime('%m/%d/%Y')), "end":str(end_date.strftime('%m/%d/%Y'))}})
         return {"names":names,"emails":emails}
     except:
         print("Error in getting sheet")
         return {"result": [0,0]}
+
 @app.route("/managercardgetter", methods=["POST"])
 def gettimecardselected():
     spreadsheet = spreadsheetgetter()
@@ -213,11 +233,11 @@ def gettimecardselected():
     deadline = end_date + datetime.timedelta(days=3)
     print(deadline)
     session_id1 = Session_Id.query.filter_by(session_id=str(session["uid"])).first()
-    email = session_id1.email_session
     PP_sheet = spreadsheet.worksheet(request.json["PP"])
     cell = PP_sheet.find(request.json["intern"], in_column=2)
     row = PP_sheet.row_values(cell.row)
-    if email == row[10]:
+    admin_session = Session_IdAdmin.query.filter_by(session_id=str(session["uid"]), manager="admin").first()
+    if admin_session or session_id1.email_session == row[10]:
         return {"result": row[2:4],"manager_approval": row[8],"deadline":str(deadline.strftime('%m/%d/%Y')),"managercomments": row[9],"tasks": row[6],"start":str(start_date.strftime('%m/%d/%Y')), "end":str(end_date.strftime('%m/%d/%Y'))}
     else:
         return {"status":"Unauthorized"}
@@ -267,13 +287,14 @@ def updatetimecardmanager():
     try:
         if intended_PP == current_PP-1:
             session_id1 = Session_Id.query.filter_by(session_id=str(session["uid"])).first()
-            email = session_id1.email_session
+            
             PP_sheet = spreadsheet.worksheet(request.json["PP"])
             
             cell = PP_sheet.find(request.json["intern"], in_column=2)
             
             row = PP_sheet.row_values(cell.row)
-            if email == row[10]:
+            admin_session = Session_IdAdmin.query.filter_by(session_id=str(session["uid"]), manager="admin").first()
+            if admin_session or session_id1.email_session == row[10]:
                 PP_weeks = request.json["Weeks"]
                 PP_sheet.update_cell(cell.row, 3, PP_weeks[0])
                 PP_sheet.update_cell(cell.row, 4, PP_weeks[1])
@@ -316,8 +337,10 @@ def manager_profile(email):
 
 @app.route('/admin/login', methods = ["POST"])
 def loginadmin():
-    admin = Admin.query.filter_by(email=request.json["email"].strip(), password= request.json["password"]).first()
+    admin = Admin.query.filter_by(email=request.json["email"].strip()).first()
     if admin:
+        if not check_password(request.json["password"].strip(), admin.password):
+            return {"result": "Not found"}
         uid = uuid4()
         admin.session_ids.append(Session_IdAdmin(session_id = uid, email_session= admin, manager ="admin"))
         db.session.commit()
@@ -331,8 +354,10 @@ def loginadmin():
 
 @app.route('/login', methods = ["POST"])
 def login():
-    user = Users.query.filter_by(email=request.json["email"].strip(), password= request.json["password"]).first()
+    user = Users.query.filter_by(email=request.json["email"].strip()).first()
     if user:
+        if not check_password(request.json["password"].strip(), user.password):
+            return {"result": "Not found"}
         
         print(user.manager)
         if user and (user.manager == "intern"):
@@ -404,10 +429,16 @@ def adding_intern():
     data  = request.json
     user = Users.query.filter_by(email=data["studentEmail"].strip()).first()
     if not user:
-        new = Users(email= data["studentEmail"].strip(), password =data["password"].strip(), manager="intern")
+        new = Users(email= data["studentEmail"].strip(), password=hash_password(data["password"].strip()), manager="intern", firsttime=True)
         db.session.add(new)
         db.session.commit()
-        
+
+    manager = user = Users.query.filter_by(email=data["managerName"].strip()).first()
+    if not manager:
+        new = Users(email= data["managerEmail"].strip(), password=hash_password(data["password"].strip()), manager="manager", firsttime=True)
+        db.session.add(new)
+        db.session.commit()
+
     spreadsheet = spreadsheetgetter()
     PPsheet = spreadsheet.worksheet("PP"+str(current_PPgetter()))
     
@@ -462,15 +493,16 @@ def change_creds():
     if not user:
         return {"result": "User not found"}
     
-    user.password = request.json["password"].strip()
+    user.password = hash_password(request.json["password"].strip())
     db.session.commit()
     return {"result":"Success"}
 
 
 
 if __name__ == '__main__': 
+    
     with app.app_context():
         db.create_all()
-        #db.session.add(Users(email= "ben.wilkoff@minerva.edu", password ="Minerva123!", manager="manager"))
+        #db.session.add(Admin(email= "alaa+Admin@minerva.edu", password =hash_password("Minerva123!"), name="Alaa"))
         #db.session.commit()
     app.run(debug = True, port= 8000)
